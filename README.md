@@ -41,7 +41,9 @@ cord cutting, and mobile bundling.
 - **ACM** — SSL/TLS certificate
 - **CloudWatch** — Logging and monitoring
 
-> **Cost Note:** EC2 t2.micro with Docker Compose is used instead of ECS Fargate + ElastiCache to stay within AWS free tier. In production this would be ECS Fargate with ElastiCache for managed scalability.
+> **Cost Note:** EC2 t2.micro with Docker Compose is used instead of ECS Fargate + ElastiCache
+> to stay within AWS free tier. In production this would be ECS Fargate with ElastiCache
+> for managed scalability.
 
 ### DevOps
 - **Docker + Docker Compose** — Local development and containerization
@@ -57,14 +59,36 @@ cord cutting, and mobile bundling.
 - Python 3.11+
 - Docker + Docker Compose
 - Git
+- AWS CLI v2+
 
-### Step 1 — Clone and Create Folder Structure
+### Step 1 — Create Folder Structure
 ```bash
-git init
+mkdir spectrum-insights
+cd spectrum-insights
 mkdir frontend backend infrastructure .github
 mkdir .github/workflows
 mkdir infrastructure/terraform
 mkdir infrastructure/scripts
+```
+
+### Step 1.5 — Git & GitHub Setup
+```bash
+# Initialize git
+git init
+
+# Create base files
+New-Item .gitignore
+New-Item .env.example
+New-Item README.md
+
+# First commit
+git add .
+git commit -m "chore: initial scaffold with React, Tailwind, Jest setup"
+
+# Connect to GitHub
+git remote add origin https://github.com/allstarmayu/spectrum-insights.git
+git branch -M main
+git push -u origin main
 ```
 
 ### Step 2 — Frontend Setup
@@ -84,10 +108,28 @@ npm install recharts d3 d3-cloud axios react-router-dom
 npm install -D tailwindcss @tailwindcss/vite eslint-plugin-react-hooks
 
 # Install testing dependencies
-npm install -D jest @testing-library/react @testing-library/jest-dom @testing-library/user-event jest-environment-jsdom babel-jest @babel/core @babel/preset-env @babel/preset-react
+npm install -D jest @testing-library/react @testing-library/jest-dom \
+  @testing-library/user-event jest-environment-jsdom babel-jest \
+  @babel/core @babel/preset-env @babel/preset-react
+
+# Configure Jest
+# 1. Create babel.config.cjs with Babel presets
+# 2. Add jest config block to package.json
+# 3. Create src/tests/__mocks__/fileMock.js
+# 4. Create src/tests/__mocks__/styleMock.js
+# 5. Update test scripts in package.json
 ```
 
-### Step 3 — Run Locally (Frontend only)
+### Step 3 — AWS Setup
+```bash
+# Configure AWS CLI with IAM user credentials
+aws configure
+
+# Verify IAM user
+aws sts get-caller-identity
+```
+
+### Step 4 — Run Locally (Frontend only)
 ```bash
 cd frontend
 npm run dev
@@ -95,7 +137,7 @@ npm run dev
 
 Frontend: http://localhost:5173
 
-### Step 4 — Run Locally (Full Stack with Docker)
+### Step 5 — Run Locally (Full Stack with Docker)
 ```bash
 # From root of project
 cp .env.example .env
@@ -112,29 +154,48 @@ API Docs: http://localhost:8000/docs
 ```
 spectrum-insights/
 ├── .github/
-│   └── workflows/        # GitHub Actions CI/CD
-├── frontend/             # React + Vite application
+│   └── workflows/            # GitHub Actions CI/CD
+│       ├── frontend.yml      # React → S3 + CloudFront
+│       └── backend.yml       # FastAPI → ECR + EC2
+├── frontend/                 # React + Vite application
 │   ├── src/
-│   │   ├── api/          # Axios API calls
-│   │   ├── components/   # Reusable UI components
-│   │   ├── pages/        # Page components
-│   │   ├── hooks/        # Custom React hooks
-│   │   ├── context/      # Global state
-│   │   ├── constants/    # Topic configs
-│   │   └── utils/        # Helper functions
-│   └── tests/            # Frontend tests
-├── backend/              # FastAPI + pytrends service
+│   │   ├── api/              # Axios API calls
+│   │   ├── components/       # Reusable UI components
+│   │   │   ├── common/       # Navbar, Sidebar, Spinner
+│   │   │   ├── charts/       # TrendLineChart, WordCloud, RegionMap
+│   │   │   └── dashboard/    # TopicCard, DrillDownPanel
+│   │   ├── pages/            # Dashboard, NotFound
+│   │   ├── hooks/            # useTrends custom hook
+│   │   ├── context/          # DashboardContext global state
+│   │   ├── constants/        # Topic configs
+│   │   └── utils/            # Helper functions
+│   └── src/tests/            # Frontend tests
+│       ├── __mocks__/        # SVG and CSS mocks for Jest
+│       └── components/       # Component test files
+├── backend/                  # FastAPI + pytrends service
 │   ├── app/
-│   │   ├── api/          # Route handlers
-│   │   ├── core/         # Config and cache
-│   │   ├── models/       # Pydantic models
-│   │   └── services/     # pytrends business logic
-│   └── tests/            # Backend tests
+│   │   ├── api/              # Route handlers
+│   │   │   └── routes/       # trends.py, health.py
+│   │   ├── core/             # config.py, cache.py
+│   │   ├── models/           # Pydantic models
+│   │   └── services/         # pytrends business logic
+│   └── tests/                # Backend tests
+│       ├── unit/             # Unit tests
+│       └── integration/      # Integration tests
 ├── infrastructure/
-│   ├── terraform/        # AWS infrastructure as code
-│   └── scripts/          # Manual deployment helpers
-├── docker-compose.yml    # Local dev environment
-├── .env.example          # Environment variable template
+│   ├── terraform/            # AWS infrastructure as code
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   ├── outputs.tf
+│   │   ├── versions.tf
+│   │   └── modules/
+│   │       ├── s3_cloudfront/
+│   │       ├── ec2/
+│   │       ├── ecr/
+│   │       └── networking/
+│   └── scripts/              # Manual deployment helpers
+├── docker-compose.yml        # Local dev environment
+├── .env.example              # Environment variable template
 └── README.md
 ```
 
@@ -146,8 +207,8 @@ spectrum-insights/
 ```bash
 cd frontend
 npm test                  # Run all tests
-npm test -- --watch       # Watch mode during development
-npm test -- --coverage    # With coverage report
+npm run test:watch        # Watch mode during development
+npm run test:coverage     # With coverage report
 ```
 
 ### Backend
@@ -177,6 +238,21 @@ cp .env.example .env
 | `EC2_HOST` | EC2 public IP for backend | — |
 | `EC2_USER` | EC2 SSH user | ec2-user |
 
+---
+
+## AWS Infrastructure
+
+| Service | Purpose | Cost |
+|---|---|---|
+| S3 | Host React static files | Free tier |
+| CloudFront | CDN + HTTPS | Free tier |
+| EC2 t2.micro | Run FastAPI + Redis via Docker Compose | Free tier |
+| ECR | Store Docker image | Free tier |
+| ACM | SSL certificate | Always free |
+
+- AWS Account ID: `555802223518`
+- Region: `us-east-1`
+- IAM User: `spectrum-insights-dev`
 
 ---
 
@@ -186,5 +262,14 @@ Every push to `main` branch triggers GitHub Actions:
 
 1. Run frontend tests (Jest)
 2. Run backend tests (Pytest)
-3. If tests pass → build React → deploy to S3 → invalidate CloudFront
-4. If tests pass → build Docker image → push to ECR → deploy to ECS Fargate
+3. If tests pass → build React → deploy to S3 → invalidate CloudFront cache
+4. If tests pass → build Docker image → push to ECR → SSH into EC2 → pull latest image → restart containers
+
+---
+
+## Interview Information
+
+- **Company:** Charter Communications (Spectrum)
+- **Role:** Full Stack Developer
+- **Project:** Competitive Intelligence Dashboard using Google Trends
+- **Slide deck deadline:** 5 days before interview
