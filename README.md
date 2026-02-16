@@ -144,9 +144,9 @@ cp .env.example .env
 docker compose up
 ```
 
-Frontend: http://localhost:5173
+Frontend: http://localhost
 Backend:  http://localhost:8000
-API Docs: http://localhost:8000/docs
+API Docs: http://localhost:8000/docs 
 
 ---
 
