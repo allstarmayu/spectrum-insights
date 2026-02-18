@@ -13,8 +13,12 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379"
     CACHE_TTL: int = 3600  # 1 hour in seconds
 
-    # CORS
-    FRONTEND_URL: str = "http://localhost:5173"
+    # CORS - Multiple frontend origins
+    CORS_ORIGINS: list = [
+        "http://localhost:5173",  # Vite dev server
+        "http://localhost",       # Docker nginx
+        "http://localhost:80",    # Docker nginx explicit
+    ]
 
     class Config:
         env_file = ".env"

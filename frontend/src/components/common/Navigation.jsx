@@ -40,12 +40,12 @@ export default function Navigation({ topics = [], activeTopicId, onTopicChange, 
               {/* Tooltip */}
               {showTooltip && !sidebarOpen && (
                 <div className="absolute top-14 left-0 bg-gray-600 text-white text-lg px-4 py-2 rounded-lg transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-                Main Menu
+                  Main Menu
                 </div>
               )}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => onTopicChange?.(null)}>
               <img src={charterLogo} alt="Charter Communications" className="h-15" />
             </div>
           </div>
@@ -62,7 +62,7 @@ export default function Navigation({ topics = [], activeTopicId, onTopicChange, 
                     : 'text-gray-600 hover:text-gray-900'
                   }`}
               >
-                {topic.label.replace(/^\S+\s/, '')}
+                {topic.label}
                 {activeTopicId === topic.id && (
                   <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600" />
                 )}
@@ -98,7 +98,6 @@ export default function Navigation({ topics = [], activeTopicId, onTopicChange, 
       <div className={`fixed top-[64px] left-0 h-full w-64 bg-white z-50 shadow-xl transform transition-transform duration-300
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
-
         <div className="p-4">
           <p className="text-xs text-gray-500 uppercase tracking-wide mb-3">Topics</p>
           {topics.map((topic) => (
@@ -114,7 +113,7 @@ export default function Navigation({ topics = [], activeTopicId, onTopicChange, 
                   : 'text-gray-700 hover:bg-gray-100'
                 }`}
             >
-              {topic.label.replace(/^\S+\s/, '')}
+              {topic.label}
             </button>
           ))}
         </div>
