@@ -79,15 +79,20 @@ export default function Dashboard({ keyword }) {
     gsap.fromTo(
       '.dashboard-card',
       { opacity: 0, y: 30 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.6,
-        ease: 'power2.out',
-        stagger: 0.15,
-      }
+      { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', stagger: 0.15 }
     );
   }, []);
+
+
+  // 2. Re-animate word cloud cards when data loads
+  useEffect(() => {
+    if (relatedQueries.length === 0 && risingQueries.length === 0) return;
+    gsap.fromTo(
+      '.wordcloud-card',
+      { opacity: 0, y: 30 },
+      { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', stagger: 0.15 }
+    );
+  }, [relatedQueries, risingQueries]);
 
   // 2. Count-up animation when chartData loads
   useEffect(() => {
@@ -115,6 +120,8 @@ export default function Dashboard({ keyword }) {
     });
   }, [chartData]);
 
+  console.log('relatedQueries:', relatedQueries);
+  console.log('risingQueries:', risingQueries);
   return (
     <main className="w-full px-6 py-8 space-y-6">
 
@@ -301,7 +308,7 @@ export default function Dashboard({ keyword }) {
 
       {/* Word Clouds */}
       {allLoading ? (
-        <Card className="dashboard-card" style={{ opacity: 0 }}>
+        <Card className="wordcloud-card" style={{ opacity: 0 }}>
           <CardContent className="flex items-center justify-center h-[300px]">
             <div className="text-center">
               <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent" />
@@ -312,7 +319,7 @@ export default function Dashboard({ keyword }) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {relatedQueries.length > 0 && (
-            <Card className="dashboard-card" style={{ opacity: 0 }}>
+            <Card className="wordcloud-card" style={{ opacity: 0 }}>
               <CardHeader>
                 <CardTitle className="text-2xl font-bold">Related Queries</CardTitle>
                 <CardDescription className="text-base">Top searches associated with {keyword}</CardDescription>
@@ -323,7 +330,7 @@ export default function Dashboard({ keyword }) {
             </Card>
           )}
           {risingQueries.length > 0 && (
-            <Card className="dashboard-card" style={{ opacity: 0 }}>
+            <Card className="wordcloud-card" style={{ opacity: 0 }}>
               <CardHeader>
                 <CardTitle className="text-2xl font-bold">Rising Queries</CardTitle>
                 <CardDescription className="text-base">Breakout searches trending upward</CardDescription>
