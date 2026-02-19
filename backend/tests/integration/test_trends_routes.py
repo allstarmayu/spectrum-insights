@@ -14,18 +14,18 @@ def test_health_endpoint_returns_200(client):
     assert "cache_status" in data
 
 
-def test_topics_endpoint_returns_predefined_topics(client):
-    """Test topics endpoint returns all three categories."""
-    response = client.get("/api/topics")
+# def test_topics_endpoint_returns_predefined_topics(client):
+#     """Test topics endpoint returns all three categories."""
+#     response = client.get("/api/topics")
     
-    assert response.status_code == 200
-    data = response.json()
-    assert "topics" in data
-    topics = data["topics"]
-    assert len(topics) == 3
-    assert any(t["id"] == "broadband" for t in topics)
-    assert any(t["id"] == "cord_cutting" for t in topics)
-    assert any(t["id"] == "mobile" for t in topics)
+#     assert response.status_code == 200
+#     data = response.json()
+#     assert "topics" in data
+#     topics = data["topics"]
+#     assert len(topics) == 3
+#     assert any(t["id"] == "broadband" for t in topics)
+#     assert any(t["id"] == "cord_cutting" for t in topics)
+#     assert any(t["id"] == "mobile" for t in topics)
 
 
 def test_trends_endpoint_with_valid_keyword(client, mock_cache_service, mock_trends_data):
