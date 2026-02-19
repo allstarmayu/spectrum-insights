@@ -143,6 +143,33 @@ class TrendsService:
         await cache_service.set(cache_key, response.model_dump(), ttl=3600)
 
         return response
+    
+    async def get_region(self, keyword: str, timeframe: str = "today 12-m", geo: str = "US") -> list[RegionData]:
+        """Fetches only interest by region with its own cache key"""
+        cache_key = f"region:{keyword.lower().replace(' ', '_')}:{timeframe}:{geo}"
+
+        cached = await cache_service.get(cache_key)
+        if cached:
+            logger.info(f"Returning cached region data for: {keyword}")
+            return [RegionData(**r) for r in cached["data"]]
+
+        logger.info(f"Fetching fresh region data for: {keyword}")
+        result = self._get_interest_by_region(keyword, timeframe, geo)
+        await cache_service.set(cache_key, {"data": [r.model_dump() for r in result]}, ttl=3600)
+        return result
+    
+    async def get_interest_over_time(self, keyword: str, timeframe: str = "today 12-m", geo: str = "US") -> list[InterestOverTimeData]:
+        cache_key = f"iot:{keyword.lower().replace(' ', '_')}:{timeframe}:{geo}"
+
+        cached = await cache_service.get(cache_key)
+        if cached:
+            logger.info(f"Returning cached IOT data for: {keyword}")
+            return [InterestOverTimeData(**r) for r in cached["data"]]
+
+        logger.info(f"Fetching fresh IOT data for: {keyword}")
+        result = self._get_interest_over_time(keyword, timeframe, geo)
+        await cache_service.set(cache_key, {"data": [r.model_dump() for r in result]}, ttl=3600)
+        return result
 
 
 # Single instance

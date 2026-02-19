@@ -2,6 +2,7 @@ import redis.asyncio as aioredis
 import json
 import logging
 from app.core.config import settings
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ class CacheService:
             logger.error(f"Cache get error: {e}")
             return None
 
-    async def set(self, key: str, value: dict, ttl: int = None):
+    async def set(self, key: str, value: dict | list, ttl: Optional[int] = None):
         """Set value in cache with TTL"""
         if not self.redis:
             return

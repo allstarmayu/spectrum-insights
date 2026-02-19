@@ -26,10 +26,10 @@ class WordCloudItem(BaseModel):
 
 class TrendResponse(BaseModel):
     keyword: str
-    interest_over_time: list[InterestOverTimeData]
-    interest_by_region: list[RegionData]
-    related_queries: list[WordCloudItem]
-    rising_queries: list[WordCloudItem]
+    interest_over_time: list[InterestOverTimeData] = []
+    interest_by_region: list[RegionData] = []
+    related_queries: list[WordCloudItem] = []
+    rising_queries: list[WordCloudItem] = []
 
 
 class HealthResponse(BaseModel):
