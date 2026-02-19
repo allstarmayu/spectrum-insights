@@ -1,11 +1,18 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+# Handle OPTIONS preflight requests
+from fastapi import Request
+from fastapi.responses import JSONResponse
+
 from contextlib import asynccontextmanager
 import logging
 
 from app.core.config import settings
 from app.core.cache import cache_service
 from app.api.routes import health, trends
+
+
 
 # Configure logging
 logging.basicConfig(
@@ -51,6 +58,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.options("/{rest_of_path:path}")
+async def preflight_handler(request: Request, rest_of_path: str):
+    return JSONResponse(
+        content={},
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type",
+        }
+    )
 
 # Include routers
 app.include_router(health.router, tags=["Health"])
