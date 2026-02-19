@@ -13,11 +13,11 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379"
     CACHE_TTL: int = 3600  # 1 hour in seconds
 
-    # CORS - Multiple frontend origins
     CORS_ORIGINS: list = [
-        "http://localhost:5173",  # Vite dev server
-        "http://localhost",       # Docker nginx
-        "http://localhost:80",    # Docker nginx explicit
+        "http://localhost:5173",
+        "http://localhost",
+        "http://localhost:80",
+        "https://d28dsxgipx8gna.cloudfront.net",  # ← add your CloudFront URL
     ]
 
     class Config:
