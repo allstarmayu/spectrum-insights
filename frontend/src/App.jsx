@@ -103,7 +103,7 @@ function App() {
     const fetchTrends = async () => {
       setLoading(true);
       try {
-        const response = await fetch('http://18.117.120.151:8000/api/trends', {
+        const response = await fetch('https://djso3858997b1.cloudfront.net/api/trends', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ keyword: selectedKeyword, timeframe: 'today 12-m', geo: 'US' })

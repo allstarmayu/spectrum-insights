@@ -47,7 +47,7 @@ export default function Dashboard({ keyword }) {
     const fetchAll = async () => {
       setAllLoading(true);
       try {
-        const res = await fetch('http://18.117.120.151:8000/api/trends', {
+        const res = await fetch('https://djso3858997b1.cloudfront.net/api/trends', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ keyword, timeframe: activeTimeframe, geo: 'US' })
