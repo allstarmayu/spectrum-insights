@@ -194,7 +194,7 @@ function App() {
           </div>
         </div>
       )}
-      <p className="absolute bottom-4 right-6 text-[20px] text-gray-400">
+      <p className="fixed bottom-4 right-6 text-[20px] text-gray-400">
         All trademarks belong to their respective owners.
       </p>
     </div>
