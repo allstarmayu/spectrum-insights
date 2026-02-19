@@ -181,7 +181,9 @@ function App() {
                 <span ref={typingRef}></span>
                 <span className="animate-pulse text-gray-400">|</span>
               </div>
-              <button className="bg-blue-600 text-white text-base font-semibold px-8 py-3 rounded-full cursor-default">
+              <button className="bg-blue-600 text-white text-base font-semibold px-8 py-3 rounded-full cursor-default"
+                onClick={() => alert('Use the navigation menu above to explore topics!')}
+                >
                 Explore
               </button>
             </div>
