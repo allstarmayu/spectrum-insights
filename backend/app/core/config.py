@@ -17,7 +17,8 @@ class Settings(BaseSettings):
         "http://localhost:5173",
         "http://localhost",
         "http://localhost:80",
-        "https://d28dsxgipx8gna.cloudfront.net",  # ← add your CloudFront URL
+        "https://d28dsxgipx8gna.cloudfront.net",
+        "https://djso3858997b1.cloudfront.net", 
     ]
 
     class Config:
