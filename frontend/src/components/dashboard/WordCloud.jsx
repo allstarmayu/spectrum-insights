@@ -13,15 +13,15 @@ export default function WordCloud({ words }) {
   useEffect(() => {
     if (!words || words.length === 0) return;
 
-    const width = 500;
-    const height = 350;
+    const width = 700;
+    const height = 500;
 
     const fontScale = d3.scaleLinear()
       .domain([
         Math.min(...words.map(w => w.value)),
         Math.max(...words.map(w => w.value))
       ])
-      .range([12, 42]);
+      .range([16, 72]);
 
     d3.select(svgRef.current).selectAll('*').remove();
 

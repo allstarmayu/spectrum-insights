@@ -1,3 +1,7 @@
+⚠️ Disclaimer: This is a personal portfolio project built for educational purposes. 
+Not affiliated with or endorsed by Charter Communications or Spectrum.
+All logos and trademarks belong to their respective owners.
+
 # Spectrum Insights
 
 A competitive intelligence dashboard visualizing Google Trends data

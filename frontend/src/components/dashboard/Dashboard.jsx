@@ -3,6 +3,7 @@ import { Area, AreaChart, BarChart, Bar, CartesianGrid, XAxis, YAxis } from 'rec
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import WordCloud from './WordCloud';
+import gsap from 'gsap';
 
 const TIMEFRAMES = [
   { value: 'today 1-m', label: '1M' },
@@ -24,6 +25,11 @@ export default function Dashboard({ keyword }) {
   const [allLoading, setAllLoading] = useState(false);
   const cache = useRef({});
   const fetching = useRef({});
+
+  // Refs for count-up
+  const peakRef = useRef(null);
+  const avgRef = useRef(null);
+  const currentRef = useRef(null);
 
   useEffect(() => {
     if (!keyword) return;
@@ -68,11 +74,52 @@ export default function Dashboard({ keyword }) {
   const relatedQueries = allData?.related_queries || [];
   const risingQueries = allData?.rising_queries || [];
 
+  // 1. Staggered card entrance on mount
+  useEffect(() => {
+    gsap.fromTo(
+      '.dashboard-card',
+      { opacity: 0, y: 30 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        ease: 'power2.out',
+        stagger: 0.15,
+      }
+    );
+  }, []);
+
+  // 2. Count-up animation when chartData loads
+  useEffect(() => {
+    if (chartData.length === 0) return;
+    if (!peakRef.current || !avgRef.current || !currentRef.current) return;
+
+    const values = chartData.map(d => d.value);
+    const peak = Math.max(...values);
+    const average = Math.round(values.reduce((a, b) => a + b, 0) / values.length);
+    const current = values[values.length - 1];
+
+    const counter = { peak: 0, avg: 0, current: 0 };
+
+    gsap.to(counter, {
+      peak,
+      avg: average,
+      current,
+      duration: 1.2,
+      ease: 'power1.out',
+      onUpdate: () => {
+        if (peakRef.current) peakRef.current.textContent = Math.round(counter.peak);
+        if (avgRef.current) avgRef.current.textContent = Math.round(counter.avg);
+        if (currentRef.current) currentRef.current.textContent = Math.round(counter.current);
+      },
+    });
+  }, [chartData]);
+
   return (
     <main className="w-full px-6 py-8 space-y-6">
 
       {/* Header */}
-      <Card>
+      <Card className="dashboard-card" style={{ opacity: 0 }}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <div>
             <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-1">
@@ -80,29 +127,23 @@ export default function Dashboard({ keyword }) {
             </p>
             <CardTitle className="text-4xl font-bold tracking-tight">{keyword}</CardTitle>
 
-            {/* Stat Badges */}
-            {chartData.length > 0 && (() => {
-              const values = chartData.map(d => d.value);
-              const peak = Math.max(...values);
-              const average = Math.round(values.reduce((a, b) => a + b, 0) / values.length);
-              const current = values[values.length - 1];
-              return (
-                <div className="flex gap-3 mt-3">
-                  <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-2 text-center">
-                    <p className="text-xs text-blue-400 uppercase tracking-widest font-medium">Peak</p>
-                    <p className="text-2xl font-bold text-blue-600">{peak}</p>
-                  </div>
-                  <div className="bg-gray-50 border border-gray-100 rounded-lg px-4 py-2 text-center">
-                    <p className="text-xs text-gray-400 uppercase tracking-widest font-medium">Average</p>
-                    <p className="text-2xl font-bold text-gray-700">{average}</p>
-                  </div>
-                  <div className="bg-green-50 border border-green-100 rounded-lg px-4 py-2 text-center">
-                    <p className="text-xs text-green-400 uppercase tracking-widest font-medium">Current</p>
-                    <p className="text-2xl font-bold text-green-600">{current}</p>
-                  </div>
+            {/* Stat Badges with count-up refs */}
+            {chartData.length > 0 && (
+              <div className="flex gap-3 mt-3">
+                <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-2 text-center">
+                  <p className="text-xs text-blue-400 uppercase tracking-widest font-medium">Peak</p>
+                  <p ref={peakRef} className="text-2xl font-bold text-blue-600">0</p>
                 </div>
-              );
-            })()}
+                <div className="bg-gray-50 border border-gray-100 rounded-lg px-4 py-2 text-center">
+                  <p className="text-xs text-gray-400 uppercase tracking-widest font-medium">Average</p>
+                  <p ref={avgRef} className="text-2xl font-bold text-gray-700">0</p>
+                </div>
+                <div className="bg-green-50 border border-green-100 rounded-lg px-4 py-2 text-center">
+                  <p className="text-xs text-green-400 uppercase tracking-widest font-medium">Current</p>
+                  <p ref={currentRef} className="text-2xl font-bold text-green-600">0</p>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex gap-1 bg-muted p-1 rounded-lg">
@@ -124,12 +165,12 @@ export default function Dashboard({ keyword }) {
       </Card>
 
       {/* Area Chart */}
-      <Card>
+      <Card className="dashboard-card" style={{ opacity: 0 }}>
         <CardHeader>
-          <CardTitle>Search Interest Over Time</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-2xl font-bold">Search Interest Over Time</CardTitle>
+          <CardDescription className="text-base">
             {chartData.length > 0
-              ? `${chartData[0].date.slice(0, 10)} — ${chartData[chartData.length - 1].date.slice(0, 10)}`
+              ? `${chartData[0].date.slice(0, 10)} to ${chartData[chartData.length - 1].date.slice(0, 10)}`
               : 'Loading...'
             }
           </CardDescription>
@@ -180,11 +221,15 @@ export default function Dashboard({ keyword }) {
                 <Area
                   type="monotone"
                   dataKey="value"
-                  stroke="#2563eb"
+                  stroke="#487ef1"
                   strokeWidth={2}
                   fill="url(#colorValue)"
                   dot={false}
                   activeDot={{ r: 5 }}
+                  isAnimationActive={true}
+                  animationBegin={200}
+                  animationDuration={1200}
+                  animationEasing="ease-out"
                 />
               </AreaChart>
             </ChartContainer>
@@ -193,10 +238,10 @@ export default function Dashboard({ keyword }) {
       </Card>
 
       {/* Interest by Region */}
-      <Card>
+      <Card className="dashboard-card" style={{ opacity: 0 }}>
         <CardHeader>
-          <CardTitle>Interest by Region</CardTitle>
-          <CardDescription>Top states by search interest</CardDescription>
+          <CardTitle className="text-2xl font-bold">Interest by Region</CardTitle>
+          <CardDescription className="text-base">Top states by search interest</CardDescription>
         </CardHeader>
         <CardContent className="px-2 pt-0">
           {allLoading ? (
@@ -234,7 +279,16 @@ export default function Dashboard({ keyword }) {
                     />
                   }
                 />
-                <Bar dataKey="value" fill="#93c5fd" radius={[4, 4, 0, 0]} />
+                {/* 3. Bar chart animate up using Recharts built-in animation triggered on data load */}
+                <Bar
+                  dataKey="value"
+                  fill="#487ef1"
+                  radius={[4, 4, 0, 0]}
+                  isAnimationActive={true}
+                  animationBegin={300}
+                  animationDuration={1000}
+                  animationEasing="ease-out"
+                />
               </BarChart>
             </ChartContainer>
           ) : (
@@ -247,7 +301,7 @@ export default function Dashboard({ keyword }) {
 
       {/* Word Clouds */}
       {allLoading ? (
-        <Card>
+        <Card className="dashboard-card" style={{ opacity: 0 }}>
           <CardContent className="flex items-center justify-center h-[300px]">
             <div className="text-center">
               <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent" />
@@ -258,10 +312,10 @@ export default function Dashboard({ keyword }) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {relatedQueries.length > 0 && (
-            <Card>
+            <Card className="dashboard-card" style={{ opacity: 0 }}>
               <CardHeader>
-                <CardTitle>Related Queries</CardTitle>
-                <CardDescription>Top searches associated with {keyword}</CardDescription>
+                <CardTitle className="text-2xl font-bold">Related Queries</CardTitle>
+                <CardDescription className="text-base">Top searches associated with {keyword}</CardDescription>
               </CardHeader>
               <CardContent className="flex justify-center">
                 <WordCloud words={relatedQueries} color="#2563eb" />
@@ -269,10 +323,10 @@ export default function Dashboard({ keyword }) {
             </Card>
           )}
           {risingQueries.length > 0 && (
-            <Card>
+            <Card className="dashboard-card" style={{ opacity: 0 }}>
               <CardHeader>
-                <CardTitle>Rising Queries</CardTitle>
-                <CardDescription>Breakout searches trending upward</CardDescription>
+                <CardTitle className="text-2xl font-bold">Rising Queries</CardTitle>
+                <CardDescription className="text-base">Breakout searches trending upward</CardDescription>
               </CardHeader>
               <CardContent className="flex justify-center">
                 <WordCloud words={risingQueries} color="#16a34a" />
